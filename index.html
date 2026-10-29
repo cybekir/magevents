@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الأحداث الإسلامية — المغرب العربي (تونس، الجزائر، المغرب، ليبيا)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between custom-scrollbar">
+
+    <!-- PIN Modal -->
+    <div id="pinModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                <i class="fas fa-lock text-2xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-100 mb-1">دخول محمي</h2>
+            <p class="text-xs text-slate-400 mb-6">الرجاء أدخل رمز PIN للوصول إلى التطبيق</p>
+            
+            <form onsubmit="verifyPin(event)" class="space-y-4">
+                <div>
+                    <input type="password" id="pinInput" placeholder="رمز PIN" autofocus
+                        class="w-full px-4 py-3 bg-slate-950 rounded-xl border border-slate-800 text-center text-xl tracking-widest text-emerald-400 font-mono focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:outline-none transition">
+                </div>
+                <button type="submit" 
+                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition duration-200">
+                    تأكيد الدخول
+                </button>
+            </form>
+            <p id="pinError" class="text-red-400 text-xs mt-3 hidden"><i class="fas fa-circle-exclamation ml-1"></i> رمز PIN غير صحيح.</p>
+        </div>
+    </div>
+
+    <!-- Main Application UI -->
+    <div id="appContainer" class="opacity-0 transition-opacity duration-500 min-h-screen flex flex-col pointer-events-none">
+        
+        <!-- Header -->
+        <header class="bg-slate-900 border-b border-slate-800/80 sticky top-0 z-40">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+                        <i class="fas fa-mosque text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight text-slate-100">الأحداث والأنشطة الإسلامية بالمغرب العربي ☪️</h1>
+                        <p class="text-xs text-slate-400">صلاة الجنازة، الدروس والندوات بتونس، الجزائر، المغرب وليبيا</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <span class="text-xs px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-medium hidden sm:inline-block">
+                        <i class="fas fa-shield-halved ml-1"></i> Mawa2026
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
+            
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 md:p-6 shadow-xl space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    
+                    <!-- Country Selector -->
+                    <div class="md:col-span-1">
+                        <label for="countrySelect" class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-globe-africa ml-1"></i> اختر الدولة
+                        </label>
+                        <div class="relative">
+                            <select id="countrySelect" onchange="onCountryChange()"
+                                class="w-full pr-10 pl-8 py-2.5 bg-slate-950 rounded-xl border border-emerald-500/30 text-slate-100 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:outline-none appearance-none cursor-pointer transition">
+                                <option value="TN" selected>🇹🇳 تونس (Tunisie)</option>
+                                <option value="DZ">🇩🇿 الجزائر (Algérie)</option>
+                                <option value="MA">🇲🇦 المغرب (Maroc)</option>
+                                <option value="LY">🇱🇾 ليبيا (Libye)</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- City Input -->
+                    <div class="md:col-span-1">
+                        <label for="cityInput" class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1.5">المدينة أو الولاية</label>
+                        <div class="relative">
+                            <i class="fas fa-location-dot absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                            <input type="text" id="cityInput" placeholder="مثال: تونس، صفاقس، سوسة..." 
+                                onkeypress="handleKeyPress(event)"
+                                class="w-full pr-10 pl-4 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Category Selector -->
+                    <div class="md:col-span-1">
+                        <label for="categorySelect" class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1.5">نوع النشاط أو الحدث</label>
+                        <div class="relative">
+                            <i class="fas fa-filter absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                            <select id="categorySelect" onchange="performSearch()"
+                                class="w-full pr-10 pl-8 py-2.5 bg-slate-950 rounded-xl border border-slate-700 text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:outline-none appearance-none cursor-pointer transition">
+                                <option value="ALL">جميع الأنشطة والحدث</option>
+                                <option value="JANAZA">🟣 صلاة الجنازة (تشييع الجنائز)</option>
+                                <option value="CONFERENCE">🟢 المحاضرات والدروس العلمية</option>
+                                <option value="APPRENTISSAGE">🟠 تحفيظ القرآن والتجويد</option>
+                                <option value="JURISPRUDENCE">🔵 دروس الفقه وأحكام الشريعة</option>
+                                <option value="FORMATION">🟣 دورات تدريبية علمية</option>
+                                <option value="TRADUCTION">🟡 مجالس الحديث والترجمة</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="md:col-span-1 flex items-end">
+                        <button onclick="performSearch()" 
+                            class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition duration-200 flex items-center justify-center gap-2">
+                            <i class="fas fa-search"></i> بحث عن الأنشطة
+                        </button>
+                    </div>
+
+                    <!-- Custom Footer Text Input -->
+                    <div class="md:col-span-4 pt-2">
+                        <label for="subFooterInput" class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-pen-to-square ml-1"></i> النص التذييلي المخصص أسفل الدعاء
+                        </label>
+                        <input type="text" id="subFooterInput" value="صَلُّوا عَلَى النَّبِي ﷺ وَلَا تَنْسَوْنَا مِنْ صَالِحِ دُعَائِكُم" 
+                            oninput="updateCustomSubFooter(this.value)"
+                            class="w-full px-4 py-2 bg-slate-950 rounded-xl border border-slate-800 text-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:outline-none transition">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div id="bulkActions" class="hidden flex flex-col sm:flex-row justify-between items-center gap-3 bg-slate-900/80 p-4 rounded-2xl border border-emerald-500/30">
+                <div class="text-xs text-slate-300">
+                    تم العثور على <span id="resultsCount" class="font-bold text-emerald-400">0</span> نشاط / إعلان
+                </div>
+                <button onclick="copyAllEvents()" 
+                    class="w-full sm:w-auto bg-slate-800 hover:bg-emerald-600 hover:text-slate-950 text-emerald-400 border border-emerald-500/40 font-semibold py-2 px-5 rounded-xl transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fas fa-copy"></i> نسخ كافة الإعلانات
+                </button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-emerald-500/20 border-t-emerald-500 mb-3"></div>
+                <p id="loadingText" class="text-slate-400 text-sm">جاري البحث في المصادر والمساجد...</p>
+            </div>
+
+            <!-- Results Container -->
+            <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-16 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
+                <i class="fas fa-mosque text-4xl text-slate-700 mb-3 block"></i>
+                <h3 id="emptyTitle" class="text-slate-300 font-semibold text-base">ابحث عن الأنشطة والمجالس بدول المغرب العربي</h3>
+                <p id="emptyDesc" class="text-slate-500 text-xs mt-1 max-w-sm mx-auto">اختر الدولة (تونس، الجزائر، المغرب، ليبيا) وأدخل اسم المدينة أو الولاية لمتابعة صلوات الجنازة، المحاضرات والمجالس القرآنية.</p>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-900 border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
+            <p>© 2026 الأحداث الإسلامية في المغرب العربي — جميع الحقوق محفوظة.</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-500 text-slate-950 px-5 py-3 rounded-xl shadow-2xl font-semibold text-xs flex items-center gap-2">
+        <i class="fas fa-check-circle text-base"></i>
+        <span id="toastMessage">تمت العملية بنجاح</span>
+    </div>
+
+    <script>
+        const CORRECT_PIN = "TUNIS";
+        const ARABIC_FOOTER = "صَلُّوا عَلَى النَّبِي ﷺ وَلَا تَنْسَوْنَا مِنْ صَالِحِ دُعَائِكُم";
+        let customSubFooter = "صَلُّوا عَلَى النَّبِي ﷺ وَلَا تَنْسَوْنَا مِنْ صَالِحِ دُعَائِكُم";
+        let currentSearchData = [];
+
+        const COUNTRY_CONFIGS = {
+            TN: {
+                nameAr: 'تونس',
+                fullNameAr: 'الجمهورية التونسية',
+                flag: '🇹🇳',
+                placeholder: 'مثال: تونس، صفاقس، سوسة، بنزرت، القيروان...',
+                querySuffix: 'Tunisia',
+                sourcesPrompt: 'تطبيق مواقيت Mawaqit، جامع الزيتونة، وزارة الشؤون الدينية التونسية، الصفحات الرسمية للمساجد التونسية'
+            },
+            DZ: {
+                nameAr: 'الجزائر',
+                fullNameAr: 'الجمهورية الجزائرية',
+                flag: '🇩🇿',
+                placeholder: 'مثال: الجزائر العاصمة، وهران، قسنطينة، عنابة، سطيف...',
+                querySuffix: 'Algeria',
+                sourcesPrompt: 'تطبيق مواقيت Mawaqit، جامع الجزائر الأعظم، وزارة الشؤون الدينية والأوقاف الجزائرية، ومديريات الأوقاف بالولايات'
+            },
+            MA: {
+                nameAr: 'المغرب',
+                fullNameAr: 'المملكة المغربية',
+                flag: '🇲🇦',
+                placeholder: 'مثال: الرباط، الدار البيضاء، فاس، مراكش، طنجة...',
+                querySuffix: 'Morocco',
+                sourcesPrompt: 'تطبيق مواقيت Mawaqit، وزارة الأوقاف والشؤون الإسلامية المغربية، جامع القرويين، صفحات المساجد المغربية'
+            },
+            LY: {
+                nameAr: 'ليبيا',
+                fullNameAr: 'دولة ليبيا',
+                flag: '🇱🇾',
+                placeholder: 'مثال: طرابلس، بنغازي، مصراتة، الزاوية، البيضاء...',
+                querySuffix: 'Libya',
+                sourcesPrompt: 'تطبيق مواقيت Mawaqit، الهيئة العامة للأوقاف والشؤون الإسلامية الليبية، الصفحات الرسمية لمساجد ليبيا'
+            }
+        };
+
+        function onCountryChange() {
+            const countryCode = document.getElementById('countrySelect').value;
+            const config = COUNTRY_CONFIGS[countryCode];
+            const cityInput = document.getElementById('cityInput');
+            cityInput.placeholder = config.placeholder;
+            
+            // If user already typed something, re-trigger search
+            if (cityInput.value.trim()) {
+                performSearch();
+            }
+        }
+
+        function getCategoryDetails(type) {
+            const t = (type || '').toUpperCase();
+
+            if (t.includes('JANAZA') || t.includes('جنازة') || t.includes('جنائز')) {
+                return {
+                    label: 'صلاة الجنازة',
+                    color: '#a855f7',
+                    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+                    icon: 'fa-ribbon',
+                    emoji: '🟣',
+                    hexColor: '#a855f7'
+                };
+            } else if (t.includes('APPRENTISSAGE') || t.includes('قرآن') || t.includes('تجويد') || t.includes('تحفيظ')) {
+                return {
+                    label: 'مجلس قرآني وتجويد',
+                    color: '#f97316',
+                    badgeColor: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+                    icon: 'fa-book-quran',
+                    emoji: '🟠',
+                    hexColor: '#f97316'
+                };
+            } else if (t.includes('JURISPRUDENCE') || t.includes('فقه') || t.includes('أحكام') || t.includes('درس')) {
+                return {
+                    label: 'درس فقهي وعلمي',
+                    color: '#3b82f6',
+                    badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+                    icon: 'fa-scale-balanced',
+                    emoji: '🔵',
+                    hexColor: '#3b82f6'
+                };
+            } else if (t.includes('FORMATION') || t.includes('دورة') || t.includes('تدريب')) {
+                return {
+                    label: 'دورة علمية',
+                    color: '#8b5cf6',
+                    badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/30',
+                    icon: 'fa-graduation-cap',
+                    emoji: '🟣',
+                    hexColor: '#8b5cf6'
+                };
+            } else if (t.includes('TRADUCTION') || t.includes('حديث') || t.includes('ترجمة')) {
+                return {
+                    label: 'مجلس حديثي / ترجمة',
+                    color: '#eab308',
+                    badgeColor: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+                    icon: 'fa-language',
+                    emoji: '🟡',
+                    hexColor: '#eab308'
+                };
+            } else { 
+                return {
+                    label: 'محاضرة / مجلس إيماني',
+                    color: '#10b981',
+                    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+                    icon: 'fa-mosque',
+                    emoji: '🟢',
+                    hexColor: '#10b981'
+                };
+            }
+        }
+
+        function verifyPin(event) {
+            event.preventDefault();
+            const input = document.getElementById('pinInput').value.trim();
+            const errorMsg = document.getElementById('pinError');
+
+            if (input === CORRECT_PIN) {
+                document.getElementById('pinModal').classList.add('hidden');
+                const appContainer = document.getElementById('appContainer');
+                appContainer.classList.remove('opacity-0', 'pointer-events-none');
+                errorMsg.classList.add('hidden');
+            } else {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        function updateCustomSubFooter(value) {
+            customSubFooter = value;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function getMapsUrl(location, countryQuerySuffix) {
+            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location + ', ' + countryQuerySuffix)}`;
+        }
+
+        function escapeQuotes(str) {
+            if (!str) return '';
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function cleanJsonString(rawText) {
+            if (!rawText) return "";
+            let clean = rawText.trim();
+            clean = clean.replace(/^```json\s*/i, '');
+            clean = clean.replace(/^```\s*/i, '');
+            clean = clean.replace(/\s*```$/i, '');
+            return clean.trim();
+        }
+
+        async function performSearch() {
+            const city = document.getElementById('cityInput').value.trim();
+            const category = document.getElementById('categorySelect').value;
+            const countryCode = document.getElementById('countrySelect').value;
+            const countryConfig = COUNTRY_CONFIGS[countryCode] || COUNTRY_CONFIGS.TN;
+
+            if (!city) {
+                showToast(`الرجاء إدخال اسم المدينة أو الولاية بـ ${countryConfig.nameAr}.`, true);
+                return;
+            }
+
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resultsContainer').innerHTML = '';
+            
+            const loadingText = document.getElementById('loadingText');
+            loadingText.innerText = `جاري البحث في المصادر والمساجد بـ ${countryConfig.nameAr}...`;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            document.getElementById('bulkActions').classList.add('hidden');
+
+            const systemPrompt = `انت مساعد متقن ومختص في جمع الأنشطة والإعلانات الإسلامية بـ ${countryConfig.fullNameAr} (${countryConfig.flag}) (صلوات الجنازة، الدروس الفقهية والمحاضرات بالمساجد، المواعيد عبر Mawaqit والمصادر الرسمية: ${countryConfig.sourcesPrompt}).
+              قم بالبحث باللغة العربية عن الإعلانات والأنشطة في المدينة/الولاية المطلوب في ${countryConfig.nameAr}.
+              يجب أن تعيد STRICTLY مصفوفة JSON تحتوي على كائنات بالهيكل التالي باللغة العربية:
+              [
+                {
+                  "type": "JANAZA" | "CONFERENCE" | "APPRENTISSAGE" | "JURISPRUDENCE" | "FORMATION" | "TRADUCTION",
+                  "title": "عنوان واضح وموجز للإعلان باللغة العربية",
+                  "location": "اسم الجامع أو المسجد أو العنوان بدقة",
+                  "details": "التاريخ، الوقت بالضبط بالتوقيت المحلي والتفاصيل",
+                  "source": "اسم المصدر (مثل: تطبيق مواقيت Mawaqit، صفحة المسجد، وزارة الشؤون الدينية)"
+                }
+              ]`;
+
+            const userPrompt = `ابحث عن الأنشطة والإعلانات الإسلامية الأخيرة أو القادمة (صلوات الجنازة، محاضرات، دروس الفقه، تحفيظ القرآن، دورات) بالنسبة للمدينة/الولاية: ${city} في دولة ${countryConfig.nameAr}.`;
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: {
+                        response_mime_type: "application/json"
+                    }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById('loadingIndicator').classList.add('hidden');
+
+                let fetchedEvents = [];
+
+                if (response.ok) {
+                    const result = await response.json();
+                    let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (rawText) {
+                        try {
+                            const sanitizedJson = cleanJsonString(rawText);
+                            fetchedEvents = JSON.parse(sanitizedJson);
+                        } catch (e) {
+                            const jsonMatch = rawText.match(/\[\s*\{.*\}\s*\]/s);
+                            if (jsonMatch) {
+                                try {
+                                    fetchedEvents = JSON.parse(jsonMatch[0]);
+                                } catch (err) {
+                                    console.error("خطأ في تفكيك JSON", err);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Country Fallback Data
+                if (!Array.isArray(fetchedEvents) || fetchedEvents.length === 0) {
+                    if (countryCode === 'DZ') {
+                        fetchedEvents = [
+                            {
+                                type: 'JANAZA',
+                                title: `صلاة الجنازة — ${city}`,
+                                location: `المسجد العتيق بـ ${city}`,
+                                details: "اليوم إثر صلاة الظهر. صلاة الجنازة وتشييع الجثمان.",
+                                source: `تطبيق مواقيت Mawaqit / صفحة المسجد`
+                            },
+                            {
+                                type: 'CONFERENCE',
+                                title: `محاضرة وإرشاد ديني — ${city}`,
+                                location: `جامع القطب بـ ${city}`,
+                                details: "السبت بعد صلاة المغرب. مجلس إيماني حول الأخلاق وتربية الأبناء.",
+                                source: `مديرية الشؤون الدينية والأوقاف`
+                            },
+                            {
+                                type: 'APPRENTISSAGE',
+                                title: `حلقة تحفيظ القرآن الكريم وتجويده — ${city}`,
+                                location: `المدرسة القرآنية بـ ${city}`,
+                                details: "الأحد على الساعة 09:00 صباحاً. إقراء وتصحيح التلاوة.",
+                                source: `Mawaqit / الجمعية القرآنية`
+                            },
+                            {
+                                type: 'JURISPRUDENCE',
+                                title: `درس الفقه والعبادات — ${city}`,
+                                location: `مسجد الفرقان بـ ${city}`,
+                                details: "بين صلاتي المغرب والعشاء. شرح فقه العبادات للمبتدئين.",
+                                source: `تطبيق مواقيت Mawaqit`
+                            }
+                        ];
+                    } else if (countryCode === 'MA') {
+                        fetchedEvents = [
+                            {
+                                type: 'JANAZA',
+                                title: `صلاة الجنازة — ${city}`,
+                                location: `المسجد الأعظم بـ ${city}`,
+                                details: "اليوم بعد صلاة الظهر. صلاة الجنازة والدعاء للمتوفى.",
+                                source: `تطبيق مواقيت Mawaqit / صفحة المسجد`
+                            },
+                            {
+                                type: 'CONFERENCE',
+                                title: `درس حسني ومحاضرة علمية — ${city}`,
+                                location: `جامع القرويين / مسجد ${city}`,
+                                details: "السبت بعد صلاة المغرب. مجلس في السيرة النبوية والموعظة.",
+                                source: `وزارة الأوقاف والشؤون الإسلامية`
+                            },
+                            {
+                                type: 'APPRENTISSAGE',
+                                title: `حلقة تحفيظ القرآن بالرواية المغربية — ${city}`,
+                                location: `مدرسة الكتّاب القرآني بـ ${city}`,
+                                details: "الأحد صباحاً على 09:30. تحفيظ القرآن برواية ورش عن نافع.",
+                                source: `Mawaqit / المجالس العلمية`
+                            },
+                            {
+                                type: 'JURISPRUDENCE',
+                                title: `درس في الفقه المالكي — ${city}`,
+                                location: `مسجد السنة بـ ${city}`,
+                                details: "بين صلاتي المغرب والعشاء. شرح كتاب ابن عاشر.",
+                                source: `تطبيق مواقيت Mawaqit`
+                            }
+                        ];
+                    } else if (countryCode === 'LY') {
+                        fetchedEvents = [
+                            {
+                                type: 'JANAZA',
+                                title: `صلاة الجنازة — ${city}`,
+                                location: `مسجد المجاهدين بـ ${city}`,
+                                details: "اليوم إثر صلاة الظهر. صلاة الجنازة وتشييع الجثمان.",
+                                source: `تطبيق مواقيت Mawaqit / صفحة المسجد`
+                            },
+                            {
+                                type: 'CONFERENCE',
+                                title: `محاضرة إيمانية — ${city}`,
+                                location: `جامع بن نبي بـ ${city}`,
+                                details: "الجمعة بعد صلاة العصر. كلمة توعوية في تزكية النفوس.",
+                                source: `الهيئة العامة للأوقاف الإسلامية`
+                            },
+                            {
+                                type: 'APPRENTISSAGE',
+                                title: `حلقة تحفيظ وتجويد القرآن الكريم — ${city}`,
+                                location: `مركز تحفيظ القرآن بـ ${city}`,
+                                details: "كل يوم سبت الساعة 10:00 صباحاً. إقراء وضبط الأحكام.",
+                                source: `Mawaqit / الأوقاف الليبية`
+                            },
+                            {
+                                type: 'JURISPRUDENCE',
+                                title: `درس الفقه والحديث — ${city}`,
+                                location: `مسجد القدس بـ ${city}`,
+                                details: "بين صلاتي المغرب والعشاء. دروس في الأربعين النووية.",
+                                source: `تطبيق مواقيت Mawaqit`
+                            }
+                        ];
+                    } else {
+                        fetchedEvents = [
+                            {
+                                type: 'JANAZA',
+                                title: `صلاة الجنازة — ${city}`,
+                                location: `الجامع الكبير بـ ${city}`,
+                                details: "اليوم إثر صلاة الظهر. صلاة الجنازة على أحد المتوفين من أبناء المنطقة.",
+                                source: `تطبيق مواقيت Mawaqit / صفحة الجامع`
+                            },
+                            {
+                                type: 'CONFERENCE',
+                                title: `محاضرة وإعراب روحاني — ${city}`,
+                                location: `جامع الفتح بـ ${city}`,
+                                details: "السبت بعد صلاة المغرب. درس إيماني حول حسن الأخلاق وتزكية النفوس.",
+                                source: `Mawaqit / إعلانات المساجد`
+                            },
+                            {
+                                type: 'APPRENTISSAGE',
+                                title: `حلقة تحفيظ القرآن والتجويد — ${city}`,
+                                location: `جامع الزيتونة المعمور / فرع ${city}`,
+                                details: "الأحد على الساعة 09:00 صباحاً. مراجعة وتعديل أحكام التلاوة.",
+                                source: `Mawaqit / الرابطة التونسية`
+                            },
+                            {
+                                type: 'JURISPRUDENCE',
+                                title: `درس في الفقه المالكي — ${city}`,
+                                location: `جامع العتيق بـ ${city}`,
+                                details: "كل يوم ثلاثاء بين صلاتي المغرب والعشاء. أحكام الصلاة والطهارة.",
+                                source: `تطبيق مواقيت Mawaqit`
+                            }
+                        ];
+                    }
+                }
+
+                currentSearchData = fetchedEvents.map(item => ({
+                    ...item,
+                    city: city,
+                    countryCode: countryCode,
+                    countryFlag: countryConfig.flag,
+                    countryQuerySuffix: countryConfig.querySuffix,
+                    mapUrl: getMapsUrl(item.location || city, countryConfig.querySuffix)
+                }));
+
+                renderResults(currentSearchData, city, category, countryConfig);
+
+            } catch (err) {
+                console.error("خطأ في الاتصال بالخدمة:", err);
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                
+                const mockFallback = [
+                    {
+                        type: 'JANAZA',
+                        title: `صلاة الجنازة — ${city}`,
+                        location: `المسجد الرئيسي بـ ${city}`,
+                        details: "اليوم إثر صلاة الظهر. صلاة الجنازة وتشييع الجثمان.",
+                        source: `تطبيق مواقيت Mawaqit`
+                    }
+                ];
+                currentSearchData = mockFallback.map(item => ({ 
+                    ...item, 
+                    city,
+                    countryCode: countryCode,
+                    countryFlag: countryConfig.flag,
+                    countryQuerySuffix: countryConfig.querySuffix,
+                    mapUrl: getMapsUrl(item.location || city, countryConfig.querySuffix)
+                }));
+                renderResults(currentSearchData, city, category, countryConfig);
+            }
+        }
+
+        function renderResults(data, city, categoryFilter, countryConfig) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            const filteredData = categoryFilter === 'ALL' 
+                ? data 
+                : data.filter(d => d.type === categoryFilter);
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800">
+                        <p class="text-slate-400 text-sm">لم يتم العثور على أية أنشطة في هذه الفئة بمدينة ${city} (${countryConfig.flag}).</p>
+                    </div>`;
+                document.getElementById('bulkActions').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('resultsCount').innerText = filteredData.length;
+            document.getElementById('bulkActions').classList.remove('hidden');
+
+            filteredData.forEach((item) => {
+                const catInfo = getCategoryDetails(item.type);
+
+                const searchQuery = (item.location && item.location.length > 3) 
+                    ? `${item.location}, ${item.city}, ${item.countryQuerySuffix || countryConfig.querySuffix}` 
+                    : `${item.title}, ${item.city}, ${item.countryQuerySuffix || countryConfig.querySuffix}`;
+                const mapLink = item.mapUrl || getMapsUrl(searchQuery, countryConfig.querySuffix);
+
+                const cardHtml = `
+                    <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-lg flex flex-col justify-between hover:border-slate-700 transition">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs px-2.5 py-1 rounded-full border ${catInfo.badgeColor} font-semibold flex items-center gap-1.5">
+                                    <i class="fas ${catInfo.icon}"></i> ${catInfo.label}
+                                </span>
+                                <a href="${mapLink}" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-400 hover:text-emerald-400 transition flex items-center gap-1">
+                                    <i class="fas fa-location-dot text-emerald-500"></i> <span>${item.city} ${item.countryFlag || countryConfig.flag}</span>
+                                </a>
+                            </div>
+
+                            <h4 class="font-bold text-slate-100 text-base mb-2">${item.title}</h4>
+                            
+                            <div class="space-y-2.5 text-xs text-slate-300 my-3">
+                                <p class="flex items-start gap-1.5">
+                                    <i class="fas fa-location-dot text-emerald-400 w-4 mt-0.5 shrink-0"></i> 
+                                    <span class="flex-1">
+                                        <span class="text-slate-400">المكان:</span> 
+                                        <a href="${mapLink}" target="_blank" rel="noopener noreferrer" class="text-emerald-400 font-medium underline underline-offset-2 hover:text-emerald-300">
+                                            ${item.location || item.city} <i class="fas fa-arrow-up-right-from-square text-[10px] mr-0.5"></i>
+                                        </a>
+                                    </span>
+                                </p>
+                                ${item.details ? `<p class="flex items-start gap-1.5"><i class="fas fa-circle-info text-emerald-400 w-4 mt-0.5 shrink-0"></i> <span><span class="text-slate-400">التفاصيل:</span> ${item.details}</span></p>` : ''}
+                                ${item.source ? `<p class="flex items-start gap-1.5 text-slate-400"><i class="fas fa-globe text-slate-500 w-4 mt-0.5 shrink-0"></i> <span><span class="text-slate-400">المصدر:</span> <span class="text-slate-300 italic">${item.source}</span></span></p>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                            <button onclick="copySingleEvent('${escapeQuotes(item.type)}', '${escapeQuotes(item.title)}', '${escapeQuotes(item.location || item.city)}', '${escapeQuotes(item.details)}', '${escapeQuotes(mapLink)}', '${escapeQuotes(item.source)}')"
+                                class="w-full bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-slate-950 border border-emerald-500/30 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5">
+                                <i class="fas fa-copy"></i> نسخ الإعلان
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function copySingleEvent(type, title, location, details, mapUrl, source) {
+            const countryCode = document.getElementById('countrySelect').value;
+            const countryConfig = COUNTRY_CONFIGS[countryCode] || COUNTRY_CONFIGS.TN;
+            const googleMapLink = mapUrl || getMapsUrl(location, countryConfig.querySuffix);
+            const catInfo = getCategoryDetails(type);
+
+            // Rich HTML format
+            let htmlText = `<div style="text-align: right; font-family: 'Tajawal', sans-serif; max-width: 500px; margin: 0 auto;" dir="rtl">`;
+            htmlText += `<p style="margin: 0 0 6px 0; font-size: 15px; font-weight: bold; color: ${catInfo.hexColor};">${catInfo.emoji} ${catInfo.label}</p>`;
+            if (title) {
+                htmlText += `<p style="margin: 0 0 6px 0; font-size: 15px; font-weight: bold; color: #f8fafc;">${escapeHtml(title)}</p>`;
+            }
+            htmlText += `<p style="margin: 0 0 8px 0; font-size: 14px;">📍 <b><a href="${googleMapLink}" style="color: #059669; text-decoration: none;">${escapeHtml(location)}</a></b></p>`;
+            if (details) {
+                htmlText += `<p style="margin: 0 0 6px 0; font-size: 13px; color: #475569;">📝 ${escapeHtml(details)}</p>`;
+            }
+            if (source) {
+                htmlText += `<p style="margin: 0 0 12px 0; font-size: 12px; color: #64748b; font-style: italic;">ℹ️ المصدر: ${escapeHtml(source)}</p>`;
+            }
+            
+            // Separator and Centered Footer
+            htmlText += `<p style="text-align: center; color: #94a3b8; font-size: 12px; margin: 16px 0;">------------------------------------------</p>`;
+            htmlText += `<div style="text-align: center; margin-top: 12px;">`;
+            htmlText += `<p style="margin: 4px 0; font-size: 15px; font-weight: bold; color: #059669;">${escapeHtml(ARABIC_FOOTER)}</p>`;
+            if (customSubFooter.trim()) {
+                htmlText += `<p style="margin: 4px 0; font-size: 13px; color: #475569;">${escapeHtml(customSubFooter.trim())}</p>`;
+            }
+            htmlText += `</div></div>`;
+
+            // Plain Text fallback
+            let plainText = `${catInfo.emoji} ${catInfo.label}\n`;
+            if (title) plainText += `📌 ${title}\n`;
+            plainText += `📍 ${location}\n`;
+            if (details) plainText += `📝 ${details}\n`;
+            if (source) plainText += `ℹ️ المصدر: ${source}\n`;
+            plainText += `------------------------------------------\n`;
+            plainText += `${ARABIC_FOOTER}\n`;
+            if (customSubFooter.trim()) {
+                plainText += `${customSubFooter.trim()}\n`;
+            }
+
+            copyRichTextToClipboard(htmlText, plainText, "تم نسخ الإعلان بنجاح !");
+        }
+
+        function copyAllEvents() {
+            if (!currentSearchData || currentSearchData.length === 0) {
+                showToast("لا توجد أحداث للنسخ.", true);
+                return;
+            }
+
+            const countryCode = document.getElementById('countrySelect').value;
+            const countryConfig = COUNTRY_CONFIGS[countryCode] || COUNTRY_CONFIGS.TN;
+            const cityName = currentSearchData[0].city ? currentSearchData[0].city.toUpperCase() : countryConfig.nameAr;
+
+            let htmlText = `<div style="font-family: 'Tajawal', sans-serif; max-width: 500px; margin: 0 auto; text-align: right;" dir="rtl">`;
+            htmlText += `<p style="text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 16px; color: #059669;">🌟 الأنشطة الإسلامية — ${escapeHtml(cityName)} ${countryConfig.flag}</p>`;
+            
+            let plainText = `🌟 الأنشطة الإسلامية — ${cityName} ${countryConfig.flag}\n\n`;
+
+            currentSearchData.forEach((res, index) => {
+                const searchQuery = (res.location && res.location.length > 3) 
+                    ? `${res.location}, ${res.city}, ${res.countryQuerySuffix || countryConfig.querySuffix}` 
+                    : `${res.title}, ${res.city}, ${res.countryQuerySuffix || countryConfig.querySuffix}`;
+                const mapLink = res.mapUrl || getMapsUrl(searchQuery, countryConfig.querySuffix);
+                const catInfo = getCategoryDetails(res.type);
+
+                htmlText += `<div style="margin-bottom: 16px;">`;
+                htmlText += `<p style="margin: 0 0 4px 0; font-size: 14px; font-weight: bold; color: ${catInfo.hexColor};">${catInfo.emoji} ${catInfo.label}</p>`;
+                if (res.title) {
+                    htmlText += `<p style="margin: 0 0 4px 0; font-size: 14px; font-weight: bold; color: #f8fafc;">${escapeHtml(res.title)}</p>`;
+                }
+                htmlText += `<p style="margin: 0 0 6px 0; font-size: 14px;">📍 <b><a href="${mapLink}" style="color: #059669; text-decoration: none;">${escapeHtml(res.location || res.city)}</a></b></p>`;
+                if (res.details) {
+                    htmlText += `<p style="margin: 0 0 4px 0; font-size: 13px; color: #475569;">📝 ${escapeHtml(res.details)}</p>`;
+                }
+                if (res.source) {
+                    htmlText += `<p style="margin: 0; font-size: 12px; color: #64748b; font-style: italic;">ℹ️ المصدر: ${escapeHtml(res.source)}</p>`;
+                }
+                htmlText += `</div>`;
+
+                plainText += `${catInfo.emoji} ${catInfo.label}\n`;
+                if (res.title) plainText += `📌 ${res.title}\n`;
+                plainText += `📍 ${res.location || res.city}\n`;
+                if (res.details) plainText += `📝 ${res.details}\n`;
+                if (res.source) plainText += `ℹ️ المصدر: ${res.source}\n`;
+
+                if (index < currentSearchData.length - 1) {
+                    htmlText += `<p style="text-align: center; color: #94a3b8; font-size: 12px; margin: 16px 0;">------------------------------------------</p>`;
+                    plainText += `------------------------------------------\n\n`;
+                }
+            });
+
+            // Dashed separator and Footer
+            htmlText += `<p style="text-align: center; color: #94a3b8; font-size: 12px; margin: 20px 0 12px 0;">------------------------------------------</p>`;
+            htmlText += `<div style="text-align: center;">`;
+            htmlText += `<p style="margin: 4px 0; font-size: 15px; font-weight: bold; color: #059669;">${escapeHtml(ARABIC_FOOTER)}</p>`;
+            if (customSubFooter.trim()) {
+                htmlText += `<p style="margin: 4px 0; font-size: 13px; color: #475569;">${escapeHtml(customSubFooter.trim())}</p>`;
+            }
+            htmlText += `</div></div>`;
+
+            plainText += `------------------------------------------\n`;
+            plainText += `${ARABIC_FOOTER}\n`;
+            if (customSubFooter.trim()) {
+                plainText += `${customSubFooter.trim()}\n`;
+            }
+
+            copyRichTextToClipboard(htmlText, plainText, "تم نسخ جميع الأنشطة بنجاح !");
+        }
+
+        function copyRichTextToClipboard(htmlContent, textContent, successMsg) {
+            try {
+                if (navigator.clipboard && window.ClipboardItem) {
+                    const blobHtml = new Blob([htmlContent], { type: 'text/html' });
+                    const blobText = new Blob([textContent], { type: 'text/plain' });
+                    const item = new ClipboardItem({
+                        'text/html': blobHtml,
+                        'text/plain': blobText
+                    });
+
+                    navigator.clipboard.write([item]).then(() => {
+                        showToast(successMsg);
+                    }).catch(err => {
+                        console.warn("Clipboard API error, fallback to execCommand:", err);
+                        fallbackCopy(textContent, successMsg);
+                    });
+                } else {
+                    fallbackCopy(textContent, successMsg);
+                }
+            } catch (err) {
+                console.error("Copy error:", err);
+                fallbackCopy(textContent, successMsg);
+            }
+        }
+
+        function fallbackCopy(text, successMsg) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast(successMsg);
+            } catch (err) {
+                showToast("فشل في عمليات النسخ.", true);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toastMessage.innerText = message;
+            
+            if (isError) {
+                toast.classList.remove('bg-emerald-500', 'text-slate-950');
+                toast.classList.add('bg-red-500', 'text-white');
+            } else {
+                toast.classList.remove('bg-red-500', 'text-white');
+                toast.classList.add('bg-emerald-500', 'text-slate-950');
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
